@@ -1,0 +1,139 @@
+@using AgendaConsulta.ViewModels
+@model List<ProcessoAgendaViewModel>
+
+@* <link rel="stylesheet" href="~/css/tabela-processos.css" /> *@
+
+<div class="charts-container">
+    <div class="chart-box">
+        <div class="period-chart">
+            <div id="unidadeGestoraChart"></div>
+        </div>
+    </div>
+    <div class="chart-box">
+        <div class="status-chart">
+            <div id="graficoAtrasosRosquinha" style="height: 400px;"></div>
+        </div>
+    </div>
+
+    <div class="chart-box">
+        <div class="status-chart">
+            <div id="situacaoChart"></div>
+        </div>
+    </div>
+</div>
+
+<div class="alerts-section">
+    <div class="tab-pane fade show active" id="pills-profile" role="tabpanel" aria-labelledby="pills-profile-tab">
+        <div class="row justify-content-center mb-5">
+            <div class="col-12">
+                <div class="quadro-atividades-urgentes ">
+                    <h4 class="alerts-header mb-3" style="border-radius: 16px;">
+                        <span class="alert-icon">⚠️</span>
+                        QUADRO DE AVISOS
+                    </h4>
+                    @if (Model != null && Model != null && Model != null)
+                    {
+                        <div class="row">
+                            @foreach (var atividade in Model)
+                            {
+                                @await Html.PartialAsync("_CardAtividadePrioridade", atividade)
+                            }
+                        </div>
+                    }
+                    else
+                    {
+                        <p style="color:red">Não há processos com eventos no momento.</p>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="alerts-section">
+    <div class="col-12">
+        <div class="quadro-atividades-urgentes">
+            <h4 class="alerts-header mb-3" style="border-radius: 16px;">
+                <span class="alert-icon">🔍</span>
+                Veja seus processos
+            </h4>
+        </div>
+    </div>
+    <div class="table-container table-wrapper">
+        <table class="process-table">
+            <thead>
+                <tr>
+                    <th>Processo</th>
+                    <th>Objeto</th>
+                    <th>Data Conclusão Fase Interna</th>
+                    <th>Data Conclusão Fase Externa</th>
+                    <th>Data Prevista para Conclusão do Processo</th>
+                    <th>Conclusão do Processo</th>
+                    <th>Situação do processo</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (Model != null && Model.Any())
+                {
+                    @foreach (var atividade in Model)
+                    {
+                        string statusClass = atividade.Situacao switch
+                        {
+                            "Fracassado" => "status-fracassado",
+                            "Andamento" => "status-andamento",
+                            "Êxito" => "status-exito",
+                            "Deserto" => "status-deserto",
+                            "Revogado" => "status-revogado",
+                            "Suspenso" => "status-suspenso",
+                            "Finalizado parcial" => "status-finalizado_parcial",
+                            _ => "status-default"
+                        };
+                        <tr class="table-row @statusClass">
+                            <td>
+                                <div class="process-item">@atividade.NumeroProcesso</div>
+                            </td>
+                            <td class="object-description">@atividade.Objeto</td>
+                            <td class="date-cell @(atividade.DataConclusaoInterna == null ? "empty" : "")">
+                                @(atividade.DataConclusaoInterna?.ToString("dd/MM/yyyy") ?? "-")
+                            </td>
+                            <td class="date-cell @(atividade.DataConclusaoExterna == null ? "empty" : "")">
+                                @(atividade.DataConclusaoExterna?.ToString("dd/MM/yyyy") ?? "-")
+                            </td>
+                            <td class="date-cell @(atividade.DataPrevisao == null ? "empty" : "")">
+                                @(atividade.DataPrevisao?.ToString("dd/MM/yyyy") ?? "Sem previsão")
+                            </td>
+                            <td class="progress-container">
+                                @{
+                                    int progresso = int.TryParse(atividade.Progresso, out var p) ? p : 0;
+                                    var graus = progresso * 3.6; // 100% = 360deg
+                                }
+                                <div class="progress-circle"
+                                    style="background: conic-gradient(#4caf50 0deg, #4caf50 @(graus)deg, #e0e0e0 @(graus)deg);">
+                                    <span class="progress-text">@($"{progresso}%")</span>
+                                </div>
+                            </td>
+
+                            @*   <td class="progress-container">
+                                <div class="progress-circle"
+                                    style="background: conic-gradient(#4caf50 0deg, #4caf50 @(90 * 3.6)deg, #e0e0e0 @(90 * 3.6)deg);">
+                                    <span class="progress-text">@(90)%</span>
+                                </div>
+                            </td> *@
+                            <td>
+                                <div class="status-badge @statusClass">@atividade.Situacao</div>
+                            </td>
+                        </tr>
+                    }
+                }
+                else
+                {
+                    <tr>
+                        <td colspan="7" class="no-data-message">
+                            Nenhum processo encontrado
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+</div>
