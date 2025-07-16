@@ -1,0 +1,37 @@
+@using AgendaConsulta.ViewModels
+@using Domain.Enums
+@using Domain.Entities
+@model List<Atendente>
+
+
+<table class="table mt-3">
+  <thead>
+    <tr>
+      <th scope="col">
+        Id
+      </th scope="col">
+      <th>
+        Nome
+      </th>
+      <th scope="col">
+        CPF
+      </th>
+    </tr>
+  </thead>
+  <tbody>
+    @foreach (var atendente in Model)
+    {
+      <tr>
+        <td>
+          @atendente.Id
+        </td>
+        <td>
+          @atendente.Nome
+        </td>
+        <td>
+          @atendente.CPF
+        </td>
+      </tr>
+    }
+  </tbody>
+</table>
