@@ -1,0 +1,288 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - Agenda de Compras Públicas</title>
+    <script type="importmap"></script>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/AgendaConsulta.styles.css" asp-append-version="true" />
+    @*  <link href="~/css/chatbot.css" rel="stylesheet" /> *@
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons (opcional, se quiser usar ícones específicos do Bootstrap) -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+
+<body>
+    <header>
+        <style>
+            /* Estilos personalizados para a navbar */
+            .custom-navbar {
+                background: linear-gradient(135deg, #3b82f6 0%, #1e3a8a 100%);
+                box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+                padding: 1rem 0;
+                position: relative;
+            }
+
+                .custom-navbar::before {
+                    content: '';
+                    position: absolute;
+                    top: 0;
+                    left: 0;
+                    right: 0;
+                    bottom: 0;
+                    background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 20" fill="none"><defs><pattern id="grid" width="20" height="20" patternUnits="userSpaceOnUse"><path d="M 20 0 L 0 0 0 20" fill="none" stroke="rgba(255,255,255,0.03)" stroke-width="0.5"/></pattern></defs><rect width="100" height="20" fill="url(%23grid)"/></svg>');
+                    pointer-events: none;
+                }
+
+            .navbar-brand-container {
+                display: flex;
+                align-items: center;
+                gap: 12px;
+            }
+
+            .custom-logo {
+                width: 45px;
+                height: 45px;
+                background: linear-gradient(45deg, #ffffff, #e3f2fd);
+                border-radius: 12px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                box-shadow: 0 4px 15px rgba(255, 255, 255, 0.2);
+                transition: all 0.3s ease;
+            }
+
+                .custom-logo:hover {
+                    transform: translateY(-2px);
+                    box-shadow: 0 6px 20px rgba(255, 255, 255, 0.3);
+                }
+
+                .custom-logo svg {
+                    width: 24px;
+                    height: 24px;
+                    color: #1e3c72;
+                }
+
+            .navbar-brand {
+                color: white !important;
+                font-weight: 700;
+                font-size: 1.5rem;
+                text-decoration: none;
+                transition: all 0.3s ease;
+                text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+            }
+
+                .navbar-brand:hover {
+                    color: #e3f2fd !important;
+                    transform: translateX(5px);
+                }
+
+            .navbar-brand-text {
+                margin: 0;
+            }
+
+            .navbar-brand-subtitle {
+                font-size: 0.75rem;
+                color: rgba(255, 255, 255, 0.8);
+                font-weight: 400;
+                margin: -2px 0 0 0;
+                text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+            }
+
+            .navbar-toggler {
+                border: 2px solid rgba(255, 255, 255, 0.3);
+                background: rgba(255, 255, 255, 0.1);
+                backdrop-filter: blur(10px);
+                border-radius: 8px;
+                transition: all 0.3s ease;
+            }
+
+                .navbar-toggler:hover {
+                    background: rgba(255, 255, 255, 0.2);
+                    border-color: rgba(255, 255, 255, 0.5);
+                }
+
+            .navbar-toggler-icon {
+                background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3e%3cpath stroke='rgba%28255, 255, 255, 1%29' stroke-linecap='round' stroke-miterlimit='10' stroke-width='2' d='m4 7h22M4 15h22M4 23h22'/%3e%3c/svg%3e");
+            }
+
+            .navbar-nav .nav-link {
+                color: rgba(255, 255, 255, 0.9) !important;
+                font-weight: 500;
+                padding: 0.75rem 1.25rem !important;
+                border-radius: 8px;
+                margin: 0 0.25rem;
+                transition: all 0.3s ease;
+                position: relative;
+                overflow: hidden;
+            }
+
+                .navbar-nav .nav-link::before {
+                    content: '';
+                    position: absolute;
+                    top: 0;
+                    left: -100%;
+                    width: 100%;
+                    height: 100%;
+                    background: rgba(255, 255, 255, 0.1);
+                    transition: left 0.3s ease;
+                }
+
+                .navbar-nav .nav-link:hover {
+                    color: white !important;
+                    background: rgba(255, 255, 255, 0.15);
+                    transform: translateY(-2px);
+                    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+                }
+
+                    .navbar-nav .nav-link:hover::before {
+                        left: 0;
+                    }
+
+            .navbar-collapse {
+                z-index: 10;
+            }
+
+
+            .custom-navbar {
+                animation: slideInDown 0.8s ease-out;
+            }
+
+            .header {
+                background: #2563eb;
+                color: white;
+                padding: 1rem 2rem;
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            }
+
+                .header h1 {
+                    font-size: 1.5rem;
+                    font-weight: 600;
+                }
+
+            .header-actions {
+                display: flex;
+                gap: 1rem;
+                align-items: center;
+            }
+
+            .btn {
+                padding: 0.5rem 1rem;
+                border: none;
+                border-radius: 6px;
+                cursor: pointer;
+                font-size: 0.9rem;
+                font-weight: 500;
+                transition: all 0.2s;
+                text-decoration: none;
+                display: inline-flex;
+                align-items: center;
+                gap: 0.5rem;
+            }
+
+            .btn-primary {
+                background: #10b981;
+                color: white;
+            }
+
+                .btn-primary:hover {
+                    background: #059669;
+                    transform: translateY(-1px);
+                }
+
+            .btn-secondary {
+                background: #3b82f6;
+                color: white;
+            }
+
+                .btn-secondary:hover {
+                    background: #2563eb;
+                    transform: translateY(-1px);
+                }
+        </style>
+        <nav class="navbar navbar-expand-sm navbar-toggleable-sm custom-navbar">
+            <div class="container-fluid">
+                <div class="navbar-header-content">
+                    <a class="navbar-brand-container" asp-area="" asp-controller="Home" asp-action="Index"
+                       style="text-decoration: none;">
+                        <div class="custom-logo">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M12 2C13.1 2 14 2.9 14 4V6H16C17.1 6 18 6.9 18 8V19C18 20.1 17.1 21 16 21H8C6.9 21 6 20.1 6 19V8C6 6.9 6.9 6 8 6H10V4C10 2.9 10.9 2 12 2ZM12 4V6H12V4ZM8 8V19H16V8H8ZM9 10H15V12H9V10ZM9 13H15V15H9V13ZM9 16H13V18H9V16Z" />
+                                <circle cx="19" cy="4" r="2" fill="#4CAF50" />
+                            </svg>
+                        </div>
+                        <div class="navbar-brand">
+                            <div class="navbar-brand-text">Agenda de Compras</div>
+                            <div class="navbar-brand-subtitle">Públicas</div>
+                        </div>
+                    </a>
+
+                    @if (ViewContext.RouteData.Values["controller"]?.ToString() == "Home" &&
+                                        ViewContext.RouteData.Values["action"]?.ToString() == "Index")
+                    {
+                        <div class="d-flex justify-content-end gap-3">
+                            <div class="d-none d-lg-block">
+                                <a asp-area="" asp-controller="Atividade" asp-action="Create" class="btn-criar-atividade">
+                                    <i class="bi bi-plus-circle-fill"></i> Criar atividade
+                                </a>
+                            </div>
+                            @if (User.FindFirst("Perfil")?.Value == "Atendente")
+                            {
+                                <div class="d-none d-lg-block">
+                                    <a asp-area="" asp-controller="Atendimento" asp-action="Index" class="btn-criar-atividade">
+                                        <i class="bi bi-chat-left-fill"></i> Atendimentos
+                                    </a>
+                                </div>
+                            }
+
+                        </div>
+                    }
+                </div>
+
+                <partial name="_LoginPartial" />
+
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse"
+                        aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+
+
+            </div>
+        </nav>
+    </header>
+    <div class="container">
+        <main role="main" class="pb-3">
+            @RenderBody()
+
+        </main>
+
+    </div>
+
+    <footer class="border-top text-center justify-content-center footer text-muted">
+        <div class="container">
+            &copy; 2025 - AGENDA DE COMPRAS PÚBLICAS
+        </div>
+    </footer>
+    <script src="~/js/chatbot.js"></script>
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://code.highcharts.com/highcharts.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://code.highcharts.com/highcharts.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.inputmask/5.0.6/jquery.inputmask.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.mask/1.14.15/jquery.mask.min.js"></script>
+    <script src="~/js/site.js" asp-append-version="true"></script>
+    <script src="~/lib/sweet-alert/sweetalert2.all.min.js"></script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+
+</html>
