@@ -1,0 +1,299 @@
+﻿@using Domain.Enums
+@model AgendaConsulta.Models.ProcessoAgendaViewModel
+
+@{
+    ViewBag.Title = "Adicionar nova atividade";
+}
+
+<style>
+    .titulo-pagina {
+        color: #1e3c72;
+        font-weight: 700;
+        margin-bottom: 1.5rem;
+    }
+
+    .form-section {
+        background: #ffffff;
+        border-radius: 12px;
+        padding: 2rem;
+        margin-bottom: 2rem;
+        box-shadow: 0 2px 15px rgba(0, 0, 0, 0.08);
+        border: 1px solid #e9ecef;
+    }
+
+    .section-title {
+        color: #495057;
+        font-weight: 600;
+        font-size: 1.1rem;
+        margin-bottom: 1.5rem;
+        padding-bottom: 0.5rem;
+        border-bottom: 2px solid #e9ecef;
+    }
+
+    .form-control {
+        border-radius: 8px;
+        border: 1px solid #ced4da;
+        padding: 0.75rem;
+        transition: all 0.3s ease;
+    }
+
+        .form-control:focus {
+            border-color: #1e3c72;
+            box-shadow: 0 0 0 0.2rem rgba(30, 60, 114, 0.25);
+        }
+
+    .control-label {
+        font-weight: 600;
+        color: #495057;
+        margin-bottom: 0.5rem;
+    }
+
+    .btn-success {
+        background: linear-gradient(45deg, #28a745 0%, #20c997 100%);
+        border: none;
+        padding: 0.75rem 2rem;
+        border-radius: 8px;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        box-shadow: 0 2px 10px rgba(40, 167, 69, 0.3);
+    }
+
+        .btn-success:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(40, 167, 69, 0.5);
+        }
+
+    .btn-primary {
+        background: linear-gradient(45deg, #007bff 0%, #0056b3 100%);
+        border: none;
+        padding: 0.5rem 1.5rem;
+        border-radius: 8px;
+        font-weight: 600;
+        transition: all 0.3s ease;
+    }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(0, 123, 255, 0.4);
+        }
+
+    .form-group {
+        margin-bottom: 1.5rem;
+    }
+
+    .required-field::after {
+        content: " *";
+        color: #dc3545;
+        font-weight: bold;
+    }
+</style>
+
+<div class="container-fluid">
+    <!-- Cabeçalho -->
+    <div class="row my-4">
+        <div class="col-12 d-flex justify-content-between align-items-center">
+            <h2 class="titulo-pagina">
+                <i class="bi bi-plus-square me-2"></i>Cadastrar Novo Processo
+            </h2>
+            <a asp-controller="Home" asp-action="index" class="btn btn-primary">
+                <i class="bi bi-arrow-left me-1"></i>Voltar
+            </a>
+        </div>
+    </div>
+
+    <!-- Formulário -->
+    <form asp-action="Create">
+        <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
+
+        <!-- Seção: Informações Básicas do Processo -->
+        <div class="form-section">
+            <h4 class="section-title">
+                <i class="bi bi-file-text me-2"></i>Informações Básicas do Processo
+            </h4>
+            <div class="row">
+                <div class="form-group col-md-4">
+                    <label asp-for="NumeroProcesso" class="control-label required-field"></label>
+                    <input asp-for="NumeroProcesso" class="form-control mascara-processo" required />
+                    <span asp-validation-for="NumeroProcesso" class="text-danger"></span>
+                </div>
+
+                <div class="form-group col-md-4">
+                    <label asp-for="UnidadeGestoraId" class="control-label required-field">Unidade Gestora</label>
+                    <select asp-for="UnidadeGestoraId" class="form-control" asp-items="ViewBag.UnidadesGestoras" required>
+                        <option value="">Selecione uma unidade gestora...</option>
+                    </select>
+                    <span asp-validation-for="UnidadeGestoraId" class="text-danger"></span>
+                </div>
+
+                 <div class="form-group col-md-4">
+                    <label asp-for="ClasseObjeto" class="control-label required-field">Natureza do Objeto</label>
+                    <select asp-for="ClasseObjeto" class="form-control" asp-items="Html.GetEnumSelectList<ClasseObjetoEnum>()" required>
+                        <option value="">Selecione uma Natureza...</option>
+                    </select>
+                    <span asp-validation-for="ClasseObjeto" class="text-danger"></span>
+                </div>
+
+@*                 <div class="form-group col-md-4">
+                    <label asp-for="Situacao" class="control-label required-field">Situação</label>
+                    <select asp-for="Situacao" class="form-control" asp-items="Html.GetEnumSelectList<SituacaoAtividadeEnum>()" required>
+                        <option value="">Selecione uma situação...</option>
+                    </select>
+                    <span asp-validation-for="Situacao" class="text-danger"></span>
+                </div> *@
+            </div>
+        </div>
+
+        <!-- Seção: Prazos e Datas -->
+        <div class="form-section">
+            <h4 class="section-title">
+                <i class="bi bi-calendar-date me-2"></i>Prazos e Datas
+            </h4>
+            <div class="row">
+                <div class="form-group col-md-4">
+                    <label asp-for="DataPrevisao" class="control-label required-field">Data De Previsão</label>
+                    <input asp-for="DataPrevisao" class="form-control" type="date" required />
+                    <span asp-validation-for="DataPrevisao" class="text-danger"></span>
+                </div>
+
+                <div class="form-group col-md-4">
+                    <label asp-for="DataConclusaoInterna" class="control-label required-field">Data De Conclusão Interna</label>
+                    <input asp-for="DataConclusaoInterna" class="form-control" type="date" required />
+                    <span asp-validation-for="DataConclusaoInterna" class="text-danger"></span>
+                </div>
+
+                <div class="form-group col-md-4">
+                    <label asp-for="DataConclusaoExterna" class="control-label required-field">Data De Conclusão Externa</label>
+                    <input asp-for="DataConclusaoExterna" class="form-control" type="date" required />
+                    <span asp-validation-for="DataConclusaoExterna" class="text-danger"></span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Seção: Prioridade -->
+        <div class="form-section">
+            <h4 class="section-title">
+                <i class="bi bi-exclamation-triangle me-2"></i>Configurações de Prioridade
+            </h4>
+            <div class="row">
+                <div class="form-group col-md-3">
+                    <label asp-for="Prioridade" class="control-label">É Prioridade?</label>
+                    <select asp-for="Prioridade" class="form-control">
+                        <option value="false" selected="selected">Não</option>
+                        <option value="true">Sim</option>
+                    </select>
+                    <span asp-validation-for="Prioridade" class="text-danger"></span>
+                </div>
+
+                <div class="form-group col-md-3 campo-prioridade">
+                    <label asp-for="IdPrioridade" class="control-label">ID da Prioridade</label>
+                    <input asp-for="IdPrioridade" class="form-control" type="number" min="1" />
+                    <span asp-validation-for="IdPrioridade" class="text-danger"></span>
+                </div>
+
+                <div class="form-group col-md-6 campo-prioridade">
+                    <label asp-for="MotivoPrioridade" class="control-label">Motivo da Prioridade</label>
+                    <select asp-for="MotivoPrioridade" class="form-control" asp-items="Html.GetEnumSelectList<MotivoPrioridadeEnum>()">
+                        <option value="">Selecione um motivo...</option>
+                    </select>
+                    <span asp-validation-for="MotivoPrioridade" class="text-danger"></span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Seção: Objeto e Temas -->
+        <div class="form-section">
+            <h4 class="section-title">
+                <i class="bi bi-tags me-2"></i>Objeto e Temas
+            </h4>
+            <div class="row">
+                <div class="form-group col-md-8">
+                    <label asp-for="Objeto" class="control-label required-field">Descrição do Objeto</label>
+                    <textarea asp-for="Objeto" class="form-control" rows="4" required
+                              placeholder="Descreva detalhadamente o objeto do processo..."></textarea>
+                    <span asp-validation-for="Objeto" class="text-danger"></span>
+                </div>
+
+                <div class="form-group col-md-4">
+                    <label asp-for="Temas" class="control-label">Tema Principal</label>
+                    <select asp-for="Temas" class="form-control" asp-items="Html.GetEnumSelectList<SubObjetoAtividadeEnum>()">
+                        <option value="">Selecione um tema...</option>
+                    </select>
+                    <span asp-validation-for="Temas" class="text-danger"></span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Botões de Ação -->
+        <div class="form-section">
+            <div class="row">
+                <div class="col-12 d-flex justify-content-end gap-3">
+                    <a asp-controller="Home" asp-action="Index" class="btn btn-secondary">
+                        <i class="bi bi-x-circle me-1"></i>Cancelar
+                    </a>
+                    <button type="submit" class="btn btn-success">
+                        <i class="bi bi-check-circle me-1"></i>Salvar Processo
+                    </button>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+
+@section Scripts {
+    <script>
+
+
+        $(document).ready(function () {
+              // Aplicar máscara ao campo de número do processo
+            $('.mascara-processo').inputmask({
+                mask: "9999.999999/9999-99[[-C9]]",
+                placeholder: "____._____/_____-__"
+            });
+
+            // Validação adicional do formulário
+            $('form').on('submit', function(e) {
+                var isValid = true;
+
+                // Verificar campos obrigatórios
+                $(this).find('input[required], select[required], textarea[required]').each(function() {
+                    if (!$(this).val()) {
+                        $(this).addClass('is-invalid');
+                        isValid = false;
+                    } else {
+                        $(this).removeClass('is-invalid');
+                    }
+                });
+
+                if (!isValid) {
+                    e.preventDefault();
+                    alert('Por favor, preencha todos os campos obrigatórios.');
+                }
+            });
+
+            // Remover classe de erro quando o campo for preenchido
+            $('input, select, textarea').on('change blur', function() {
+                if ($(this).val()) {
+                    $(this).removeClass('is-invalid');
+                }
+            });
+
+        // Função para mostrar ou ocultar os campos conforme a prioridade
+        function toggleCamposPrioridade() {
+            var prioridade = $('#Prioridade').val();
+            if (prioridade === "true") {
+                $('.campo-prioridade').show();
+            } else {
+                $('.campo-prioridade').hide();
+            }
+        }
+
+            toggleCamposPrioridade();
+
+            // Chamar quando mudar a seleção
+            $('#Prioridade').change(function () {
+                toggleCamposPrioridade();
+            });
+        });
+
+    </script>
+}
