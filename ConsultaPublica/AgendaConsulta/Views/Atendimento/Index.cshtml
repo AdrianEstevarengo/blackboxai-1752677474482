@@ -1,0 +1,823 @@
+﻿@using AgendaConsulta.ViewModels
+@using Domain.Enums
+@using Domain.Entities
+@model List<Atendente>
+<style>
+    .titulo-pagina {
+        color: #1e3c72;
+        font-weight: 700;
+        margin-bottom: 1.5rem;
+    }
+
+    .header {
+        background: #2563eb;
+        color: white;
+        padding: 1rem 2rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+
+        .header h1 {
+            font-size: 1.5rem;
+            font-weight: 600;
+        }
+
+    .header-actions {
+        display: flex;
+        gap: 1rem;
+        align-items: center;
+    }
+
+    .btn {
+        padding: 0.5rem 1rem;
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+        font-size: 0.9rem;
+        font-weight: 500;
+        transition: all 0.2s;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .btn-primary {
+        background: #10b981;
+        color: white;
+    }
+
+        .btn-primary:hover {
+            background: #059669;
+            transform: translateY(-1px);
+        }
+
+    .btn-secondary {
+        background: #3b82f6;
+        color: white;
+    }
+
+        .btn-secondary:hover {
+            background: #2563eb;
+            transform: translateY(-1px);
+        }
+
+    /* Sidebar das conversas */
+    .conversations-sidebar {
+        width: 320px;
+        background: #f8fafc;
+        border-right: 1px solid #e2e8f0;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .sidebar-header {
+        padding: 1.5rem;
+        border-bottom: 1px solid #e2e8f0;
+        background: white;
+    }
+
+        .sidebar-header h2 {
+            font-size: 1.1rem;
+            color: #1e293b;
+            margin-bottom: 0.5rem;
+        }
+
+    .filter-tabs {
+        display: flex;
+        gap: 0.5rem;
+    }
+
+    .filter-tab {
+        padding: 0.4rem 0.8rem;
+        background: #e2e8f0;
+        border: none;
+        border-radius: 20px;
+        font-size: 0.8rem;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+
+        .filter-tab.active {
+            background: #3b82f6;
+            color: white;
+        }
+
+    .conversations-list {
+        flex: 1;
+        overflow-y: auto;
+        padding: 0.5rem;
+    }
+
+    .conversation-item {
+        padding: 1rem;
+        margin-bottom: 0.5rem;
+        background: white;
+        border-radius: 8px;
+        border: 1px solid #e2e8f0;
+        cursor: pointer;
+        transition: all 0.2s;
+        position: relative;
+    }
+
+        .conversation-item:hover {
+            border-color: #3b82f6;
+            transform: translateY(-1px);
+            box-shadow: 0 2px 8px rgba(59, 130, 246, 0.1);
+        }
+
+        .conversation-item.active {
+            border-color: #3b82f6;
+            background: #eff6ff;
+        }
+
+        .conversation-item.unread::before {
+            content: '';
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            width: 8px;
+            height: 8px;
+            background: #ef4444;
+            border-radius: 50%;
+        }
+
+    .conversation-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 0.5rem;
+    }
+
+    .conversation-user {
+        font-weight: 600;
+        color: #1e293b;
+        font-size: 0.9rem;
+    }
+
+    .conversation-time {
+        font-size: 0.75rem;
+        color: #64748b;
+    }
+
+    .conversation-preview {
+        font-size: 0.85rem;
+        color: #64748b;
+        line-height: 1.4;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+
+    .conversation-status {
+        display: inline-block;
+        padding: 0.2rem 0.5rem;
+        border-radius: 12px;
+        font-size: 0.7rem;
+        font-weight: 500;
+        margin-top: 0.5rem;
+    }
+
+    .status-waiting {
+        background: #fef3c7;
+        color: #92400e;
+    }
+
+    .status-answered {
+        background: #d1fae5;
+        color: #065f46;
+    }
+
+    .status-priority {
+        background: #fee2e2;
+        color: #991b1b;
+    }
+
+    /* Chat Area */
+    .chat-area {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        background: white;
+    }
+
+    .chat-header {
+        padding: 1.5rem 2rem;
+        border-bottom: 1px solid #e2e8f0;
+        background: #f8fafc;
+    }
+
+    .chat-user-info {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+    }
+
+    .user-avatar {
+        width: 40px;
+        height: 40px;
+        background: #3b82f6;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-weight: 600;
+    }
+
+    .user-details h3 {
+        font-size: 1rem;
+        color: #1e293b;
+        margin-bottom: 0.2rem;
+    }
+
+    .user-details p {
+        font-size: 0.85rem;
+        color: #64748b;
+    }
+
+    .chat-messages {
+        flex: 1;
+        overflow-y: auto;
+        padding: 1.5rem 2rem;
+        background: #f8fafc;
+    }
+
+    .message {
+        margin-bottom: 1.5rem;
+        display: flex;
+        align-items: flex-start;
+        gap: 1rem;
+    }
+
+        .message.user {
+            flex-direction: row-reverse;
+        }
+
+    .message-avatar {
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.8rem;
+        font-weight: 600;
+        flex-shrink: 0;
+    }
+
+    .message.user .message-avatar {
+        background: #10b981;
+        color: white;
+    }
+
+    .message.agent .message-avatar {
+        background: #3b82f6;
+        color: white;
+    }
+
+    .message-content {
+        max-width: 70%;
+        background: white;
+        padding: 1rem;
+        border-radius: 12px;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        position: relative;
+    }
+
+    .message.user .message-content {
+        background: #3b82f6;
+        color: white;
+    }
+
+    .message-text {
+        line-height: 1.5;
+        margin-bottom: 0.5rem;
+    }
+
+    .message-time {
+        font-size: 0.75rem;
+        opacity: 0.7;
+    }
+
+    .message.user .message-time {
+        color: rgba(255,255,255,0.8);
+    }
+
+    .message.agent .message-time {
+        color: #64748b;
+    }
+
+    /* Chat Input */
+    .chat-input-area {
+        padding: 1.5rem 2rem;
+        border-top: 1px solid #e2e8f0;
+        background: white;
+    }
+
+    .chat-input-container {
+        display: flex;
+        gap: 1rem;
+        align-items: flex-end;
+    }
+
+    .chat-input {
+        flex: 1;
+        min-height: 44px;
+        max-height: 120px;
+        padding: 0.75rem 1rem;
+        border: 2px solid #e2e8f0;
+        border-radius: 22px;
+        resize: none;
+        font-family: inherit;
+        font-size: 0.9rem;
+        line-height: 1.4;
+        transition: border-color 0.2s;
+    }
+
+        .chat-input:focus {
+            outline: none;
+            border-color: #3b82f6;
+        }
+
+    .send-button {
+        width: 44px;
+        height: 44px;
+        background: #3b82f6;
+        border: none;
+        border-radius: 50%;
+        color: white;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.2s;
+    }
+
+        .send-button:hover {
+            background: #2563eb;
+            transform: scale(1.05);
+        }
+
+        .send-button:disabled {
+            background: #94a3b8;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+    /* Empty State */
+    .empty-state {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        color: #64748b;
+        padding: 2rem;
+    }
+
+    .empty-state-icon {
+        width: 80px;
+        height: 80px;
+        background: #f1f5f9;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 1rem;
+        font-size: 2rem;
+    }
+
+    .notification-badge {
+        background: #ef4444;
+        color: white;
+        border-radius: 10px;
+        padding: 0.2rem 0.5rem;
+        font-size: 0.7rem;
+        font-weight: 600;
+        min-width: 20px;
+        text-align: center;
+    }
+
+    @@media (max-width: 768px) {
+        .conversations-sidebar {
+            width: 100%;
+            position: absolute;
+            z-index: 10;
+            height: 100%;
+            transform: translateX(-100%);
+            transition: transform 0.3s;
+        }
+
+            .conversations-sidebar.open {
+                transform: translateX(0);
+            }
+
+        .header-actions {
+            gap: 0.5rem;
+        }
+
+        .btn {
+            padding: 0.4rem 0.8rem;
+            font-size: 0.8rem;
+        }
+    }
+</style>
+<div class="row my-4">
+    <div class="col-12 d-flex justify-content-between align-items-center">
+        <h2 class="titulo-pagina">
+            <i class="bi bi-plus-square me-2"></i>Painel de Atendimento
+        </h2>
+        <a asp-controller="Home" asp-action="index" class="btn btn-primary">
+            <i class="bi bi-arrow-left me-1"></i>Voltar
+        </a>
+    </div>
+</div>
+
+<div class="container painel-atendimento" id="attendancePanel" style="display: flex;">
+    <div class="conversations-sidebar">
+        <div class="sidebar-header">
+            <h2>Conversas</h2>
+            <div class="filter-tabs">
+                <button class="filter-tab active" onclick="filterConversations('all')">Todas</button>
+                <button class="filter-tab" onclick="filterConversations('waiting')">Aguardando</button>
+                <button class="filter-tab" onclick="filterConversations('answered')">Respondidas</button>
+                <button class="filter-tab" onclick="filterConversations('priority')">Urgente</button>
+            </div>
+        </div>
+        <div class="conversations-list" id="conversationsList">
+            <div class="conversation-item unread active" onclick="selectConversation(this, 'João Silva', 'Dúvida sobre processo licitatório')">
+                <div class="conversation-header">
+                    <div class="conversation-user">João Silva</div>
+                    <div class="conversation-time">14:23</div>
+                </div>
+                <div class="conversation-preview">Preciso de informações sobre o processo de licitação 2025/001. Quando será a abertura das propostas?</div>
+                <span class="conversation-status status-waiting">Aguardando</span>
+            </div>
+
+            <div class="conversation-item unread" onclick="selectConversation(this, 'Maria Santos', 'Cronograma de pagamentos')">
+                <div class="conversation-header">
+                    <div class="conversation-user">Maria Santos</div>
+                    <div class="conversation-time">13:45</div>
+                </div>
+                <div class="conversation-preview">Gostaria de saber sobre os prazos de pagamento para fornecedores. Há alguma documentação específica?</div>
+                <span class="conversation-status status-priority">Urgente</span>
+            </div>
+
+            <div class="conversation-item" onclick="selectConversation(this, 'Carlos Oliveira', 'Renovação de contrato')">
+                <div class="conversation-header">
+                    <div class="conversation-user">Carlos Oliveira</div>
+                    <div class="conversation-time">12:30</div>
+                </div>
+                <div class="conversation-preview">Obrigado pelas informações! Ficou tudo esclarecido sobre o processo de renovação.</div>
+                <span class="conversation-status status-answered">Respondida</span>
+            </div>
+
+            <div class="conversation-item unread" onclick="selectConversation(this, 'Ana Costa', 'Documentação necessária')">
+                <div class="conversation-header">
+                    <div class="conversation-user">Ana Costa</div>
+                    <div class="conversation-time">11:15</div>
+                </div>
+                <div class="conversation-preview">Quais documentos preciso apresentar para participar da licitação? Tenho dúvidas sobre os requisitos técnicos.</div>
+                <span class="conversation-status status-waiting">Aguardando</span>
+            </div>
+
+            <div class="conversation-item" onclick="selectConversation(this, 'Pedro Mendes', 'Esclarecimento sobre edital')">
+                <div class="conversation-header">
+                    <div class="conversation-user">Pedro Mendes</div>
+                    <div class="conversation-time">10:20</div>
+                </div>
+                <div class="conversation-preview">Perfeito! Muito obrigado pela explicação detalhada sobre o edital.</div>
+                <span class="conversation-status status-answered">Respondida</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="chat-area">
+        <div class="chat-header" id="chatHeader" style="display: none;">
+            <div class="chat-user-info">
+                <div class="user-avatar" id="userAvatar">JS</div>
+                <div class="user-details">
+                    <h3 id="userName">João Silva</h3>
+                    <p id="userStatus">Online • Aguardando resposta</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="chat-messages" id="chatMessages">
+            <div class="empty-state" id="emptyState">
+                <div class="empty-state-icon">💬</div>
+                <h3>Selecione uma conversa</h3>
+                <p>Escolha uma conversa na lateral para começar o atendimento</p>
+            </div>
+        </div>
+
+        <div class="chat-input-area" id="chatInputArea" style="display: none;">
+            <div class="chat-input-container">
+                <textarea class="chat-input"
+                          id="messageInput"
+                          placeholder="Digite sua resposta..."
+                          rows="1"
+                          onkeypress="handleKeyPress(event)"
+                          oninput="autoResize(this)"></textarea>
+                <button class="send-button" onclick="sendMessage()" id="sendButton">
+                    ➤
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    let currentConversation = null;
+    let conversations = {
+        'João Silva': {
+            subject: 'Dúvida sobre processo licitatório',
+            messages: [
+                {
+                    type: 'user',
+                    text: 'Olá! Preciso de informações sobre o processo de licitação 2025/001. Quando será a abertura das propostas?',
+                    time: '14:20'
+                },
+                {
+                    type: 'user',
+                    text: 'Também gostaria de saber se há algum documento específico que preciso apresentar.',
+                    time: '14:23'
+                }
+            ]
+        },
+        'Maria Santos': {
+            subject: 'Cronograma de pagamentos',
+            messages: [
+                {
+                    type: 'user',
+                    text: 'Boa tarde! Gostaria de saber sobre os prazos de pagamento para fornecedores.',
+                    time: '13:40'
+                },
+                {
+                    type: 'user',
+                    text: 'É urgente pois tenho um fornecimento programado para a próxima semana.',
+                    time: '13:45'
+                }
+            ]
+        },
+        'Carlos Oliveira': {
+            subject: 'Renovação de contrato',
+            messages: [
+                {
+                    type: 'user',
+                    text: 'Preciso de informações sobre renovação de contrato.',
+                    time: '12:25'
+                },
+                {
+                    type: 'agent',
+                    text: 'Olá Carlos! Para renovação de contratos, você precisa apresentar os documentos atualizados até 30 dias antes do vencimento. Posso te enviar a lista completa por email.',
+                    time: '12:28'
+                },
+                {
+                    type: 'user',
+                    text: 'Obrigado pelas informações! Ficou tudo esclarecido sobre o processo de renovação.',
+                    time: '12:30'
+                }
+            ]
+        }
+    };
+
+    // Initialize SignalR connection
+    const connection = new signalR.HubConnectionBuilder()
+        .withUrl("/chatHub")
+        .configureLogging(signalR.LogLevel.Information)
+        .build();
+
+    connection.start().catch(function (err) {
+        console.error("SignalR connection error: ", err.toString());
+    });
+
+    // Receive messages from the hub
+    connection.on("ReceiveMessage", function (user, message) {
+        if (!currentConversation) return;
+
+        // Add message to current conversation
+        if (!conversations[currentConversation]) {
+            conversations[currentConversation] = { messages: [] };
+        }
+
+        conversations[currentConversation].messages.push({
+            type: user === 'Você' ? 'agent' : 'user',
+            text: message,
+            time: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})
+        });
+
+        // Reload messages
+        loadMessages(currentConversation);
+
+        // Update conversation status in sidebar
+        updateConversationStatus(currentConversation, user === 'Você' ? 'answered' : 'waiting');
+    });
+
+    function selectConversation(element, userName, subject) {
+        // Remove active class from all conversations
+        document.querySelectorAll('.conversation-item').forEach(item => {
+            item.classList.remove('active');
+        });
+
+        // Add active class to selected conversation
+        element.classList.add('active');
+        element.classList.remove('unread');
+
+        // Update current conversation
+        currentConversation = userName;
+
+        // Update chat header
+        const chatHeader = document.getElementById('chatHeader');
+        const userAvatar = document.getElementById('userAvatar');
+        const userNameEl = document.getElementById('userName');
+        const userStatus = document.getElementById('userStatus');
+
+        userAvatar.textContent = userName.split(' ').map(n => n[0]).join('');
+        userNameEl.textContent = userName;
+        userStatus.textContent = 'Online • ' + subject;
+
+        // Show chat interface
+        chatHeader.style.display = 'block';
+        document.getElementById('chatInputArea').style.display = 'block';
+        document.getElementById('emptyState').style.display = 'none';
+
+        // Load messages
+        loadMessages(userName);
+    }
+
+    function loadMessages(userName) {
+        const messagesContainer = document.getElementById('chatMessages');
+        const conversation = conversations[userName] || { messages: [] };
+
+        messagesContainer.innerHTML = '';
+
+        conversation.messages.forEach(message => {
+            const messageEl = document.createElement('div');
+            messageEl.className = `message ${message.type}`;
+
+            const avatar = message.type === 'user' ?
+                userName.split(' ').map(n => n[0]).join('') : 'AT';
+
+            messageEl.innerHTML = `
+                <div class="message-avatar">${avatar}</div>
+                <div class="message-content">
+                    <div class="message-text">${message.text}</div>
+                    <div class="message-time">${message.time}</div>
+                </div>
+            `;
+
+            messagesContainer.appendChild(messageEl);
+        });
+
+        // Scroll to bottom
+        messagesContainer.scrollTop = messagesContainer.scrollHeight;
+    }
+
+    function sendMessage() {
+        const input = document.getElementById('messageInput');
+        const message = input.value.trim();
+
+        if (!message || !currentConversation) return;
+
+        // Add message to conversation
+        if (!conversations[currentConversation]) {
+            conversations[currentConversation] = { messages: [] };
+        }
+
+        const now = new Date();
+        const timeString = now.getHours().toString().padStart(2, '0') + ':' +
+                         now.getMinutes().toString().padStart(2, '0');
+
+        conversations[currentConversation].messages.push({
+            type: 'agent',
+            text: message,
+            time: timeString
+        });
+
+        // Reload messages
+        loadMessages(currentConversation);
+
+        // Clear input
+        input.value = '';
+        input.style.height = 'auto';
+
+        // Update conversation status in sidebar
+        updateConversationStatus(currentConversation, 'answered');
+
+        // Send message via SignalR
+        connection.invoke("SendMessage", "Você", message)
+            .catch(err => {
+                console.error(err.toString());
+            });
+    }
+
+    function updateConversationStatus(userName, status) {
+        const conversations = document.querySelectorAll('.conversation-item');
+        conversations.forEach(conv => {
+            const userEl = conv.querySelector('.conversation-user');
+            if (userEl && userEl.textContent === userName) {
+                const statusEl = conv.querySelector('.conversation-status');
+                statusEl.className = `conversation-status status-${status}`;
+                statusEl.textContent = status === 'answered' ? 'Respondida' :
+                                     status === 'waiting' ? 'Aguardando' : 'Urgente';
+            }
+        });
+    }
+
+    function handleKeyPress(event) {
+        if (event.key === 'Enter' && !event.shiftKey) {
+            event.preventDefault();
+            sendMessage();
+        }
+    }
+
+    function autoResize(textarea) {
+        textarea.style.height = 'auto';
+        textarea.style.height = Math.min(textarea.scrollHeight, 120) + 'px';
+    }
+
+    function filterConversations(filter) {
+        // Update active tab
+        document.querySelectorAll('.filter-tab').forEach(tab => {
+            tab.classList.remove('active');
+        });
+        event.target.classList.add('active');
+
+        // Filter conversations
+        const conversations = document.querySelectorAll('.conversation-item');
+        conversations.forEach(conv => {
+            const status = conv.querySelector('.conversation-status');
+            const statusClass = status.className;
+
+            if (filter === 'all') {
+                conv.style.display = 'block';
+            } else if (filter === 'waiting' && statusClass.includes('status-waiting')) {
+                conv.style.display = 'block';
+            } else if (filter === 'answered' && statusClass.includes('status-answered')) {
+                conv.style.display = 'block';
+            } else if (filter === 'priority' && statusClass.includes('status-priority')) {
+                conv.style.display = 'block';
+            } else {
+                conv.style.display = 'none';
+            }
+        });
+    }
+
+    // Initialize notification count
+    function updateNotificationCount() {
+        const unreadCount = document.querySelectorAll('.conversation-item.unread').length;
+        const badge = document.getElementById('notificationBadge');
+        if (unreadCount > 0) {
+            badge.textContent = unreadCount;
+            badge.style.display = 'inline-block';
+        } else {
+            badge.style.display = 'none';
+        }
+    }
+
+    // Auto-select first conversation for demo
+    setTimeout(() => {
+        const firstConversation = document.querySelector('.conversation-item');
+        if (firstConversation) {
+            firstConversation.click();
+        }
+    }, 500);
+</script>
+
+
+<table class="table mt-3">
+  <thead>
+    <tr>
+      <th scope="col">
+        Id
+      </th scope="col">
+      <th>
+        Nome
+      </th>
+      <th scope="col">
+        CPF
+      </th>
+    </tr>
+  </thead>
+  <tbody>
+    @foreach (var atendente in Model)
+    {
+      <tr>
+        <td>
+          @atendente.Id
+        </td>
+        <td>
+          @atendente.Nome
+        </td>
+        <td>
+          @atendente.CPF
+        </td>
+      </tr>
+    }
+  </tbody>
+</table>
