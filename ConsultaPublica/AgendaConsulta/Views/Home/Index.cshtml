@@ -1,0 +1,1029 @@
+﻿@using AgendaConsulta.ViewModels
+@using Domain.Enums
+@model List<ProcessoAgendaViewModel>
+
+@{
+    var atividadesJson = ViewBag.AtividadesJson;
+}
+
+<style>
+    :root {
+        --primary-blue: #1e3c72;
+        --secondary-blue: #2a5298;
+        --light-blue: #e3f2fd;
+        --success-green: #4CAF50;
+        --warning-orange: #FF9800;
+        --danger-red: #f44336;
+        --gradient-bg: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    }
+
+    body {
+        background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+        min-height: 100vh;
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    .container {
+        max-width: 1400px;
+    }
+
+    /* Título Principal */
+    .page-title {
+        background: linear-gradient(135deg, #3b82f6 0%, #1e3a8a 100%);
+        color: white;
+        padding: 2.5rem 2rem;
+        border-radius: 20px;
+        text-align: center;
+        margin: 2rem 0;
+        position: relative;
+        overflow: hidden;
+        box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+    }
+
+        .page-title h1 {
+            font-size: 3rem;
+            font-weight: 800;
+            color: white;
+            margin: 0;
+            text-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+            letter-spacing: -1px;
+            position: relative;
+            z-index: 1;
+        }
+
+    .search-group {
+        margin-bottom: 1.5rem;
+    }
+
+    .form-label {
+        color: var(--primary-blue);
+        font-weight: 600;
+        margin-bottom: 0.75rem;
+        font-size: 0.95rem;
+    }
+
+    .form-control,
+    .input-group-text {
+        border-radius: 12px;
+        border: 2px solid #e1e8ed;
+        transition: all 0.3s ease;
+        font-size: 0.95rem;
+    }
+
+        .form-control:focus {
+            border-color: var(--secondary-blue);
+            box-shadow: 0 0 0 0.2rem rgba(42, 82, 152, 0.15);
+            transform: translateY(-1px);
+        }
+
+    .input-group-text {
+        background: var(--light-blue);
+        border-right: none;
+        color: var(--primary-blue);
+    }
+
+    .barra-pesquisa {
+        border-left: none !important;
+    }
+
+    .rounded-box {
+        border-radius: 12px;
+        overflow: hidden;
+    }
+
+    .aviso-toast {
+        position: fixed;
+        top: 95px;
+        right: 2px;
+        background: white;
+        border-left: 5px solid #e74c3c;
+        border-radius: 10px;
+        padding: 20px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+        z-index: 1000;
+        max-width: 350px;
+        animation: slideInRight 0.5s ease-out;
+    }
+
+    @@keyframes slideInRight {
+        from {
+            transform: translateX(100%);
+            opacity: 0;
+        }
+
+        to {
+            transform: translateX(0);
+            opacity: 1;
+        }
+    }
+
+    .aviso-toast .toast-header {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 10px;
+    }
+
+    .aviso-toast .toast-icon {
+        width: 30px;
+        height: 30px;
+        background: #e74c3c;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        animation: bounce 1s infinite;
+    }
+
+    @@keyframes bounce {
+        0%, 20%, 50%, 80%, 100% {
+            transform: translateY(0);
+        }
+
+        40% {
+            transform: translateY(-10px);
+        }
+
+        60% {
+            transform: translateY(-5px);
+        }
+    }
+</style>
+
+<div class="container">
+    <div class="page-title fade-in">
+        <h1>AGENDA DE COMPRAS PÚBLICAS</h1>
+    </div>
+
+    <div class="search-section">
+        <div class="row">
+            <div class="col">
+                <div class="search-group">
+                    <label class="form-label fw-bold">
+                        <i class="fas fa-search me-2"></i>Busque seu Processo
+                    </label>
+                    <div class="input-group rounded-box">
+                        <span class="input-group-text barra-pesquisa border-0">
+                            <span class="bi bi-search"></span>
+                        </span>
+                        <input type="text" id="searchInput" class="form-control border-0 barra-pesquisa"
+                               placeholder="Busque pelo Objeto. ex.: Água Mineral...">
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="search-group col-md-6">
+                        <label class="form-label fw-bold">
+                            <i class="fas fa-calendar-check me-2"></i>Data Final
+                        </label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="fas fa-calendar"></i></span>
+                            <input type="date" id="dataFinal" name="dataFinal" class="form-control">
+                        </div>
+                    </div>
+
+                    <div class="search-group col-md-6">
+                        <label class="form-label fw-bold">
+                            <i class="fas fa-calendar-alt me-2"></i>Data Inicial
+                        </label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="fas fa-calendar"></i></span>
+                            <input type="date" id="dataInicial" name="dataInicial" class="form-control">
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="search-group">
+                    <div id="subObjetoGroup" class="form-group">
+                        <label for="SubObjeto" class="form-label fw-bold">Temas</label>
+                        <select class="form-control" id="SubObjeto" name="SubObjeto">
+                            <option value="">Busque por Temas ex.:JOER....</option>
+                            @foreach (var item in Html.GetEnumSelectList<SubObjetoAtividadeEnum>())
+                            {
+                                <option value="@item.Value">@item.Text</option>
+                            }
+                        </select>
+
+                    </div>
+                </div>
+
+                @if (User.FindFirst("Orgao")?.Value == "SUPEL")
+                {
+                    <div class="search-group">
+                        <div class="search-group">
+                            <div id="UnidadeGestora" class="form-group">
+                                <label for="UnidadeGestoraId" class="control-label">Unidade Gestora</label>
+                                <select id="UnidadeGestoraId" class="form-control" asp-items="ViewBag.UnidadesGestoras"
+                                        name="UnidadeGestoraId">
+                                    <option value="">Busque por U.G. ex.:SUPEL...</option>
+                                </select>
+
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+            <!-- SEÇÃO DE FILTROS COLAPSÁVEIS -->
+            <div class="filters-section fade-in">
+                <div class="filters-cabecalho" onclick="toggleFilters()">
+                    <div class="filters-title">
+                        <span>Busque a Situação do seu processo</span>
+                    </div>
+                    <i class="fas fa-chevron-down collapse-arrow" id="collapseArrow"></i>
+                </div>
+            </div>
+            <div class="filters-content" id="filtersContent">
+                <div class="" onclick="toggleFilters()">
+                    @*  <div class="filters-title">
+                        <span>Filtros por Situação de Processos</span>
+                    </div> *@
+                </div>
+                <div class="filter-options">
+                    <div class="filter-checkbox">
+                        <input type="checkbox" id="Andamento" name="Andamento">
+                        <label for="Andamento">
+                            <i class="fas fa-clock"></i>
+                            <span>Em andamento</span>
+                        </label>
+                    </div>
+
+                    <div class="filter-checkbox">
+                        <input type="checkbox" id="Exito" name="Exito">
+                        <label for="Exito">
+                            <i class="fas fa-check-circle"></i>
+                            <span>Concluídos</span>
+                        </label>
+                    </div>
+
+                    <div class="filter-checkbox">
+                        <input type="checkbox" id="Deserto" name="Deserto">
+                        <label for="Deserto">
+                            <i class="fas fa-exclamation-triangle"></i>
+                            <span>Deserto</span>
+                        </label>
+                    </div>
+
+                    <div class="filter-checkbox">
+                        <input type="checkbox" id="Revogado" name="Revogado">
+                        <label for="Revogado">
+                            <i class="fas fa-pause-circle"></i>
+                            <span>Revogado</span>
+                        </label>
+                    </div>
+                    <div class="filter-checkbox">
+                        <input type="checkbox" id="Atrasados" name="Atrasados">
+                        <label for="delayed">
+                            <i class="fas fa-exclamation-triangle me-1"></i>Atrasados
+                        </label>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- CONTEÚDO DINÂMICO -->
+    <div id="conteudo-dinamico">
+        <!-- Loading indicator -->
+        <div id="loading" class="loading">
+            <div class="spinner-border" role="status">
+                <span class="visually-hidden">Carregando...</span>
+            </div>
+            <p class="mt-2">Carregando dados...</p>
+        </div>
+        <!-- O conteúdo será carregado aqui via AJAX -->
+        @await Html.PartialAsync("_ConteudoDinamico", Model)
+    </div>
+
+
+
+</div>
+
+
+@await Html.PartialAsync("_ChatBotPartial")
+
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.inputmask/5.0.6/jquery.inputmask.min.js"></script>
+
+@section Scripts {
+    <script>
+        $(document).ready(function () {
+             $("#btnAtendimento").on("click", function () {
+                 $.ajax({
+                     url: '/ChatBot/PainelAtendimento',
+                     type: 'GET',
+                     dataType: 'html',
+                     success: function (data) {
+                         // Exibe a view retornada no container apropriado
+                         $("#painelAtendimentoContainer").html(data);
+                     },
+                     error: function () {
+                         alert("Erro ao carregar o painel de atendimento.");
+                     }
+                 });
+             });
+         });
+
+         function toggleCard(collapseId, button) {
+             const collapse = document.getElementById(collapseId);
+             const card = button.closest('.card-atividade');
+
+             // Fecha todos os outros cards e colapsa todos os conteúdos
+             document.querySelectorAll('.collapse').forEach(c => {
+                 if (c !== collapse) {
+                     c.style.display = 'none';
+                 }
+             });
+             document.querySelectorAll('.card-atividade').forEach(c => {
+                 if (c !== card) {
+                     c.classList.remove('card-expanded');
+                 }
+             });
+
+             // Alterna o card clicado
+             if (collapse.style.display === 'none' || collapse.style.display === '') {
+                 collapse.style.display = 'block';
+                 card.classList.add('card-expanded');
+             } else {
+                 collapse.style.display = 'none';
+                 card.classList.remove('card-expanded');
+             }
+         }
+
+         $(document).ready(function () {
+
+             // Animação de entrada dos cards
+             document.addEventListener('DOMContentLoaded', function () {
+                 const cards = document.querySelectorAll('.card-atividade');
+                 cards.forEach((card, index) => {
+                     card.style.animationDelay = `${index * 0.1}s`;
+                 });
+             });
+
+             // Adicionar efeito de hover suave
+             document.querySelectorAll('.card-atividade').forEach(card => {
+                 card.addEventListener('mouseenter', function () {
+                     this.style.transform = 'translateY(-8px) scale(1.02)';
+                 });
+
+                 card.addEventListener('mouseleave', function () {
+                     this.style.transform = 'translateY(0) scale(1)';
+                 });
+             });
+
+             // Variáveis globais
+             var atividades = @Html.Raw(atividadesJson);
+             var isLoading = false;
+
+             // Função global para inicializar gráficos
+             window.inicializarGraficos = function (atividadesData) {
+                 // Aguarda o DOM estar pronto e as bibliotecas carregadas
+                 if (typeof Highcharts === 'undefined') {
+                     console.error('Highcharts não está carregado');
+                     return;
+                 }
+
+                 // Verifica se os containers existem
+                 if (!document.getElementById('unidadeGestoraChart') || !document.getElementById('situacaoChart')) {
+                     console.error('Containers dos gráficos não encontrados');
+                     return;
+                 }
+
+                 try {
+                     atualizarGraficos(atividadesData || []);
+                 } catch (error) {
+                     console.error('Erro ao inicializar gráficos:', error);
+                 }
+             };
+
+             // Função para mostrar/ocultar loading
+             function toggleLoading(show) {
+                 if (show) {
+                     $('#loading').addClass('show');
+                     $('#conteudo-dinamico > :not(#loading)').hide();
+                 } else {
+                     $('#loading').removeClass('show');
+                     $('#conteudo-dinamico > :not(#loading)').show();
+                 }
+             }
+
+             // Event listeners para os campos de filtro com debounce
+             $('#searchInput, #dataInicial, #dataFinal, #SubObjeto, #Andamento, #Exito, #Deserto, #Revogado, #Atrasados, #UnidadeGestoraId')
+                 .on('input change', function () {
+                     // Debounce para evitar muitas requisições
+                     clearTimeout(window.searchTimeout);
+                     window.searchTimeout = setTimeout(buscarProcessos, 500);
+                 });
+
+             // Aplica a máscara de entrada no campo de processo
+             $('#NumeroProcesso').inputmask({
+                 mask: "9999.999999/9999-99[[-C9]]"
+             });
+
+             // Aguarda um pouco para garantir que tudo está carregado
+             setTimeout(function () {
+                 if (typeof window.inicializarGraficos === 'function') {
+                     window.inicializarGraficos(atividades);
+                 }
+             }, 500);
+
+             let filtersExpanded = false;
+
+             window.toggleFilters = function () {
+                 const content = document.getElementById('filtersContent');
+                 const arrow = document.getElementById('collapseArrow');
+
+                 filtersExpanded = !filtersExpanded;
+
+                 if (filtersExpanded) {
+                     content.classList.add('expanded');
+                     arrow.classList.add('rotated');
+                 } else {
+                     content.classList.remove('expanded');
+                     arrow.classList.remove('rotated');
+                 }
+             }
+
+
+             // Inicializa o contador de filtros ativos
+             document.addEventListener('DOMContentLoaded', function () {
+                 setTimeout(function () {
+                     document.querySelectorAll('.fade-in').forEach(function (element) {
+                         element.style.opacity = '1';
+                         element.style.transform = 'translateY(0)';
+                     });
+                 }, 100);
+             });
+
+
+             // Função principal de busca
+             function buscarProcessos() {
+                 if (isLoading) return; // Evita múltiplas requisições simultâneas
+
+                 isLoading = true;
+                 toggleLoading(true);
+
+                 const filtro = {
+                     palavraChave: document.getElementById('searchInput').value,
+                     dataInicial: document.getElementById('dataInicial').value || null,
+                     dataFinal: document.getElementById('dataFinal').value || null,
+                     subObjeto: document.getElementById('SubObjeto').value || null,
+                     emAndamento: document.getElementById('Andamento').checked,
+                     concluidos: document.getElementById('Exito').checked,
+                     deserto: document.getElementById('Deserto').checked,
+                     revogado: document.getElementById('Revogado').checked,
+                     atrasados: document.getElementById('Atrasados').checked,
+                     unidadeGestoraId: document.getElementById('UnidadeGestoraId').value || null
+                 };
+
+                 // Requisição AJAX para buscar dados
+                 $.post('@Url.Action("BuscarProcessos", "Atividade")', filtro)
+                     .done(function (response) {
+                         atividades = response;
+
+                         // Requisição para carregar o partial com os novos dados
+                         $.post('@Url.Action("CarregarConteudoDinamico", "Atividade")', {
+                             atividadesJson: JSON.stringify(atividades)
+                         })
+                             .done(function (html) {
+                                 $('#conteudo-dinamico').html(html);
+
+                                 // Reinitializa os gráficos após carregar novo conteúdo
+                                 setTimeout(function () {
+                                     if (typeof window.inicializarGraficos === 'function') {
+                                         window.inicializarGraficos(atividades);
+                                     }
+                                 }, 100);
+                             })
+                             .fail(function () {
+                                 alert('Erro ao carregar o conteúdo. Tente novamente.');
+                             })
+                             .always(function () {
+                                 isLoading = false;
+                                 toggleLoading(false);
+                             });
+                     })
+                     .fail(function () {
+                         alert('Erro na busca. Tente novamente.');
+                         isLoading = false;
+                         toggleLoading(false);
+                     });
+             }
+
+             function atualizarGraficos(atividades) {
+
+                 // Configurações de tema personalizadas
+                 Highcharts.setOptions({
+                     colors: ['#2E8B57', '#4682B4', '#DAA520', '#CD5C5C', '#9370DB', '#20B2AA', '#FF6347', '#32CD32'],
+                     chart: {
+                         backgroundColor: 'transparent',
+                         style: {
+                             fontFamily: '"Segoe UI", Tahoma, Geneva, Verdana, sans-serif'
+                         }
+                     },
+                     credits: {
+                         enabled: false
+                     }
+                 });
+
+                 // Processa dados por mês
+                 var { dados: processosPorMes, mesesOrdenados } = processarDadosPorMes(atividades, 'DataEntrada');
+
+                 // Dados de situação
+                 var situacaoData = atividades.reduce((acc, atividade) => {
+                     var situacaoRef = atividade['Situacao'] || atividade['situacao'];
+                     if (situacaoRef !== null) {
+                         acc[situacaoRef] = (acc[situacaoRef] || 0) + 1;
+                     }
+                     return acc;
+                 }, {});
+
+                 // Gráfico de Colunas - Processos por Mês
+                 Highcharts.chart('unidadeGestoraChart', {
+                     chart: {
+                         type: 'bar',
+                         backgroundColor: 'transparent',
+                         borderRadius: 8,
+                         plotShadow: true,
+                         animation: {
+                             duration: 1200
+                         },
+                         spacingTop: 20,
+                         spacingBottom: 30,
+                         spacingLeft: 80,
+                         spacingRight: 60
+                     },
+                     title: {
+                         text: '📅 Processos por Mês',
+                         style: {
+                             fontSize: '18px',
+                             fontWeight: 'bold',
+                             color: '#2c3e50'
+                         },
+                         margin: 30
+                     },
+                     subtitle: {
+                         text: 'Distribuição temporal dos processos iniciados',
+                         style: {
+                             marginBottom: '20px',
+                             fontSize: '14px',
+                             color: '#7f8c8d'
+                         }
+                     },
+                     xAxis: {
+                         categories: mesesOrdenados,
+                         title: {
+                             text: 'Período (Mês/Ano)',
+                             style: {
+                                 fontSize: '14px',
+                                 fontWeight: 'bold',
+                                 color: '#34495e'
+                             }
+                         },
+                         labels: {
+                             style: {
+                                 fontSize: '12px',
+                                 color: '#34495e',
+                                 fontWeight: '500'
+                             },
+                             formatter: function () {
+                                 return formatarNomeMesAbrev(this.value);
+                             }
+                         },
+                         gridLineWidth: 0,
+                         lineColor: '#bdc3c7',
+                         tickColor: '#bdc3c7',
+                         tickLength: 0
+                     },
+                     yAxis: {
+                         title: {
+                             text: 'Quantidade de Processos',
+                             style: {
+                                 fontSize: '14px',
+                                 fontWeight: 'bold',
+                                 color: '#34495e'
+                             }
+                         },
+                         labels: {
+                             style: {
+                                 fontSize: '12px',
+                                 color: '#34495e'
+                             }
+                         },
+                         gridLineColor: '#ecf0f1',
+                         gridLineDashStyle: 'Dot',
+                         min: 0,
+                         allowDecimals: false
+                     },
+                     tooltip: {
+                         backgroundColor: 'rgba(50, 50, 50, 0.95)',
+                         borderRadius: 10,
+                         borderWidth: 0,
+                         shadow: true,
+                         style: {
+                             color: '#ffffff',
+                             fontSize: '13px'
+                         },
+                         formatter: function () {
+                             var total = atividades.length;
+                             var percentage = ((this.y / total) * 100).toFixed(1);
+                             var nomeCompleto = formatarNomeMesAbrev(this.category);
+
+                             return '<div style="text-align: center;">' +
+                                 '<b style="font-size: 14px; color: #3498db;">📅 ' + nomeCompleto + '</b><br/><br/>' +
+                                 '<span style="font-size: 16px; font-weight: bold;">📊 ' + this.y + '</span> processos<br/>' +
+                                 '<span style="color: #95a5a6;">(' + percentage + '% do total)</span>' +
+                                 '</div>';
+
+                         },
+                         useHTML: true
+                     },
+                     plotOptions: {
+                         bar: {
+                             borderRadius: 6,
+                             borderWidth: 0,
+                             pointPadding: 0.15,
+                             groupPadding: 0.1,
+                             shadow: {
+                                 color: 'rgba(52, 152, 219, 0.3)',
+                                 offsetX: 0,
+                                 offsetY: 4,
+                                 opacity: 0.4,
+                                 width: 6
+                             },
+                             dataLabels: {
+                                 enabled: true,
+                                 color: '#2c3e50',
+                                 style: {
+                                     fontSize: '12px',
+                                     fontWeight: 'bold',
+                                     textOutline: '1px contrast',
+                                     textShadow: '1px 1px 2px rgba(255,255,255,0.8)'
+                                 },
+                                 inside: false,
+                                 align: 'left',
+                                 x: 5,
+                                 formatter: function () {
+                                     return this.y > 0 ? '<b>' + this.y + '</b>' : '';
+                                 }
+                             },
+                             animation: {
+                                 duration: 1200,
+                                 easing: 'easeOutQuart'
+                             },
+                             colorByPoint: false,
+                             gradient: true,
+                             color: {
+                                 linearGradient: { x1: 0, y1: 0, x2: 1, y2: 0 },
+                                 stops: [
+                                     [0, '#3498db'],
+                                     [0.5, '#2980b9'],
+                                     [1, '#1f4e79']
+                                 ]
+                             },
+                             states: {
+                                 hover: {
+                                     color: {
+                                         linearGradient: { x1: 0, y1: 0, x2: 1, y2: 0 },
+                                         stops: [
+                                             [0, '#5dade2'],
+                                             [0.5, '#3498db'],
+                                             [1, '#2874a6']
+                                         ]
+                                     },
+                                     shadow: {
+                                         color: 'rgba(52, 152, 219, 0.5)',
+                                         offsetX: 0,
+                                         offsetY: 6,
+                                         opacity: 0.6,
+                                         width: 8
+                                     }
+                                 }
+                             }
+                         },
+                         series: {
+                             cursor: 'pointer',
+                             point: {
+                                 events: {
+                                     click: function () {
+                                         var mesClicado = formatarNomeMes(this.category);
+                                         console.log('Mês selecionado:', mesClicado, '- Processos:', this.y);
+                                     }
+                                 }
+                             }
+                         }
+                     },
+                     series: [{
+                         name: 'Processos por Mês',
+                         data: mesesOrdenados.map(mes => processosPorMes[mes]),
+                         showInLegend: false
+                     }],
+                     responsive: {
+                         rules: [{
+                             condition: {
+                                 maxWidth: 768
+                             },
+                             chartOptions: {
+                                 chart: {
+                                     spacingLeft: 60,
+                                     spacingRight: 50
+                                 },
+                                 xAxis: {
+                                     labels: {
+                                         style: {
+                                             fontSize: '15px'
+                                         }
+                                     }
+                                 },
+                                 plotOptions: {
+                                     bar: {
+                                         dataLabels: {
+                                             style: {
+                                                 fontSize: '15px'
+                                             },
+                                             color: '#2c3e50'
+                                         }
+                                     }
+                                 }
+                             }
+                         }, {
+                             condition: {
+                                 maxWidth: 480
+                             },
+                             chartOptions: {
+                                 chart: {
+                                     spacingLeft: 50,
+                                     spacingRight: 40
+                                 },
+                                 title: {
+                                     style: {
+                                         fontSize: '16px'
+                                     }
+                                 },
+                                 subtitle: {
+                                     style: {
+                                         fontSize: '12px'
+                                     }
+                                 },
+                                 plotOptions: {
+                                     bar: {
+                                         dataLabels: {
+                                             enabled: false
+                                         }
+                                     }
+                                 }
+                             }
+                         }]
+                     }
+                 });
+
+
+                 // Gráfico de Situação dos Processos
+                 Highcharts.chart('situacaoChart', {
+                     chart: {
+                         type: 'bar',
+                         backgroundColor: 'transparent',
+                         borderRadius: 8,
+                         height: '400px'
+                     },
+                     title: {
+                         text: '📊 Situação dos Processos',
+                         style: {
+                             fontSize: '18px',
+                             fontWeight: 'bold',
+                             color: '#2c3e50'
+                         }
+                     },
+                     subtitle: {
+                         text: 'Distribuição por status atual',
+                         style: {
+                             fontSize: '14px',
+                             color: '#7f8c8d'
+                         }
+                     },
+                     xAxis: {
+                         categories: Object.keys(situacaoData),
+                         title: {
+                             text: null
+                         }
+                     },
+                     yAxis: {
+                         title: {
+                             text: 'Quantidade de Processos'
+                         },
+                         min: 0
+                     },
+                     tooltip: {
+                         formatter: function () {
+                             var total = Object.values(situacaoData).reduce((a, b) => a + b, 0);
+                             var percentage = total > 0 ? ((this.y / total) * 100).toFixed(1) : '0';
+                             return '<b>' + this.category + '</b><br/>' +
+                                 'Quantidade: <b>' + this.y + '</b><br/>' +
+                                 'Percentual: <b>' + percentage + '%</b>';
+                         }
+                     },
+                     plotOptions: {
+                         bar: {
+                             dataLabels: {
+                                 enabled: true,
+                                 formatter: function () {
+                                     var total = Object.values(situacaoData).reduce((a, b) => a + b, 0);
+                                     var percentage = total > 0 ? ((this.y / total) * 100).toFixed(1) : '0';
+                                     return this.y + ' (' + percentage + '%)';
+                                 }
+                             },
+                             colorByPoint: true
+                         }
+                     },
+                     series: [{
+                         name: 'Processos',
+                         data: Object.values(situacaoData),
+                         showInLegend: false
+                     }]
+                 });
+
+                const hoje = new Date();
+                const categoriasAtraso = {
+                    '1-7 dias (Recente)': 0,
+                    '8-15 dias (Atenção)': 0,
+                    '16-30 dias (Preocupante)': 0,
+                    '31-60 dias (Crítico)': 0,
+                    '60+ dias (Emergencial)': 0
+                };
+                const detalhesAtrasos = {
+                    '1-7 dias (Recente)': [],
+                    '8-15 dias (Atenção)': [],
+                    '16-30 dias (Preocupante)': [],
+                    '31-60 dias (Crítico)': [],
+                    '60+ dias (Emergencial)': []
+                 };
+
+                atividades.forEach(p => {
+                    const dataPrevista = new Date(p.DataPrevisao || p.dataPrevisao);
+                    const situacao = p.Situacao || p.situacao;
+                          if (dataPrevista < hoje && situacao !== 'Êxito') {
+                        const diasAtraso = Math.floor((hoje - dataPrevista) / (1000 * 60 * 60 * 24));
+                        let categoria = '';
+
+                        if (diasAtraso <= 7) categoria = '1-7 dias (Recente)';
+                        else if (diasAtraso <= 15) categoria = '8-15 dias (Atenção)';
+                        else if (diasAtraso <= 30) categoria = '16-30 dias (Preocupante)';
+                        else if (diasAtraso <= 60) categoria = '31-60 dias (Crítico)';
+                        else categoria = '60+ dias (Emergencial)';
+
+                        categoriasAtraso[categoria]++;
+                        detalhesAtrasos[categoria].push(p.NumeroProcesso || p.numeroProcesso || 'N/D');
+                    }
+                });
+
+                  const dadosRosquinha = Object.entries(categoriasAtraso)
+                        .filter(([_, v]) => v > 0)
+                        .map(([k, v]) => ({
+                            name: k,
+                            y: v,
+                            detalhes: detalhesAtrasos[k], // ← inclui os processos
+                            color: {
+                                '1-7 dias (Recente)': '#f1c40f',
+                                '8-15 dias (Atenção)': '#f39c12',
+                                '16-30 dias (Preocupante)': '#e67e22',
+                                '31-60 dias (Crítico)': '#e74c3c',
+                                '60+ dias (Emergencial)': '#c0392b'
+                            }[k]
+                        }));
+
+
+                Highcharts.chart('graficoAtrasosRosquinha', {
+                    chart: {
+                        type: 'pie',
+                        backgroundColor: 'transparent',
+                        height: 400
+                    },
+                    title: {
+                        text: '⚠️ Processos Atrasados',
+                        style: {
+                            fontSize: '18px',
+                            fontWeight: 'bold',
+                            color: '#c0392b'
+                        }
+                    },
+                    subtitle: {
+                         text: 'Processos em andamento com data de previsão ultrapassada!',
+                         style: {
+                             fontSize: '14px',
+                             color: '#7f8c8d'
+                         }
+                     },
+                    tooltip: {
+                        backgroundColor: 'rgba(50, 50, 50, 0.95)',
+                        borderRadius: 12,
+                        borderWidth: 0,
+                        shadow: true,
+                        style: {
+                            color: '#ffffff',
+                            fontSize: '14px'
+                        },
+                        useHTML: true,
+                        formatter: function () {
+                            const total = this.y;
+                            const percentage = this.percentage.toFixed(1);
+                            const processos = this.point.detalhes || [];
+
+                            let exemplos = '';
+                            if (processos.length > 0) {
+                                const primeiros = processos.slice(0, 3).map(p => `• ${p}`).join('<br/>');
+                                exemplos = `<br/><b>Números:</b><br/>${primeiros}`;
+                                if (processos.length > 3) {
+                                    exemplos += `<br/>...e mais ${processos.length - 3}`;
+                                }
+                            }
+
+                            return `
+                                <div style="text-align: left;">
+                                    <b style="font-size: 15px; color: ${this.point.color};">${this.point.name}</b><br/>
+                                    <span><b>${total}</b> processos atrasados<br/>(${percentage}% do total)</span>
+                                    ${exemplos}
+                                </div>
+                            `;
+                        }
+                    },
+                    plotOptions: {
+                        pie: {
+                            innerSize: '60%',
+                            dataLabels: {
+                                enabled: true,
+                                format: '<b>{point.name}</b><br>{point.y} ({point.percentage:.1f}%)',
+                                style: {
+                                    fontSize: '12px',
+                                    fontWeight: '600'
+                                }
+                            }
+                        }
+                    },
+                    series: [{
+                        name: 'Processos',
+                        data: dadosRosquinha
+                    }]
+                });
+             }
+
+             function processarDadosPorMes(atividades, campoData) {
+                 const dados = {};
+                 atividades.forEach(atividade => {
+                     const dataMaiuscula = atividade[campoData];
+                     const dataMinuscula = atividade['dataEntrada'];
+
+                     const data = dataMaiuscula || dataMinuscula;
+                     if (data && data !== "0001-01-01T00:00:00") {
+                         const dataObj = new Date(data);
+                         const mes = ('0' + (dataObj.getMonth() + 1)).slice(-2);
+                         const ano = dataObj.getFullYear();
+                         const chave = mes + '/' + ano;
+                         dados[chave] = (dados[chave] || 0) + 1;
+                     }
+                 });
+
+                 const mesesOrdenados = Object.keys(dados).sort((a, b) => {
+                     const [mesA, anoA] = a.split('/').map(Number);
+                     const [mesB, anoB] = b.split('/').map(Number);
+                     return (anoA - anoB) || (mesA - mesB);
+                 });
+
+                 return { dados, mesesOrdenados };
+             }
+
+             function formatarNomeMes(mesAno) {
+                 if (typeof mesAno !== 'string' || !mesAno.includes('/')) return 'Data Inválida';
+                 const [mes, ano] = mesAno.split('/');
+                 const nomesMeses = [
+                     'Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho',
+                     'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'
+                 ];
+                 const mesIndex = parseInt(mes, 10);
+                 if (isNaN(mesIndex) || mesIndex < 1 || mesIndex > 12) return 'Data Inválida';
+                 return nomesMeses[mesIndex - 1] + '/' + ano;
+             }
+
+
+             function formatarNomeMesAbrev(mesAno) {
+                 if (typeof mesAno !== 'string' || !mesAno.includes('/')) return 'Inválido';
+                 const [mes, ano] = mesAno.split('/');
+                 const nomesMeses = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'];
+                 const mesIndex = parseInt(mes, 10);
+                 if (isNaN(mesIndex) || mesIndex < 1 || mesIndex > 12) return 'Inválido';
+                 return nomesMeses[mesIndex - 1] + '/' + ano;
+             }
+         });
+                 // Função para ocultar o aviso
+         window.fecharAviso = function () {
+             const aviso = document.getElementById("avisoProcessos");
+             if (aviso) {
+                 aviso.style.transition = "opacity 0.5s ease";
+                 aviso.style.opacity = "0";
+                 setTimeout(() => {
+                     aviso.style.display = "none";
+                 }, 500);
+             }
+         };
+
+    </script>
+}
