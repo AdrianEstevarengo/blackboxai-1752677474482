@@ -1,0 +1,85 @@
+@using Domain.Enums
+@model AgendaConsulta.Models.ProcessoAgendaViewModel
+<link rel="stylesheet" href="~/css/quadro-avisos.css" />
+
+
+@{
+    var safeProcessNumber = Model.NumeroProcesso.Replace(".", "-").Replace("/", "-");
+    var atividade = Model;
+
+    bool isAtrasado = atividade.DataPrevisao.HasValue && atividade.DataPrevisao.Value.Date < DateTime.Now.Date;
+    int diasAtraso = isAtrasado ? (DateTime.Now.Date - atividade.DataPrevisao.Value.Date).Days : 0;
+
+    bool semEvento = !(atividade.Eventos?.Any() ?? false);
+
+    var ultimoEvento = atividade.Eventos?.OrderByDescending(e => e.DataCriacao).FirstOrDefault();
+    int diasSemMovimentacao = ultimoEvento != null ? (DateTime.Now.Date - ultimoEvento.DataCriacao.Date).Days : 0;
+    bool semMovimentacao = ultimoEvento != null && diasSemMovimentacao >= 5;
+
+    bool faseExterna = ultimoEvento?.TipoEvento.Titulo == "Externo" && isAtrasado;
+}
+
+
+<div class="col-lg-3 mb-4">
+    <div class="card card-atividade fade-in @((isAtrasado || faseExterna) ? "card-prioritario" : "")" onclick="toggleCard('collapse-@safeProcessNumber', this)">
+        <div class="card-corpo">
+            <div class="d-flex flex-wrap gap-2 mb-2">
+                @if (isAtrasado)
+                {
+                    <div class="alert-type alert-atraso">
+                        <i class="fas fa-clock"></i> Atrasado
+                        <span class="alert-days">@diasAtraso dias</span>
+                    </div>
+                }
+                @if (semEvento)
+                {
+                    <div class="alert-type alert-sem-evento">
+                        <i class="fas fa-calendar-times"></i> Sem Evento
+                    </div>
+                }
+                @if (semMovimentacao)
+                {
+                    <div class="alert-type alert-sem-movimentacao">
+                        <i class="fas fa-pause-circle"></i> Sem Movimentação
+                        <span class="alert-days">@diasSemMovimentacao dias</span>
+                    </div>
+                }
+                @if (faseExterna)
+                {
+                    <div class="alert-type alert-fase-externa">
+                        <i class="fas fa-exclamation-triangle"></i> Fase Externa
+                    </div>
+                }
+            </div>
+
+            <div class="process-number">@atividade.NumeroProcesso</div>
+
+            <p class="mb-2">
+                @(isAtrasado ? $"Data de previsão ultrapassada há {diasAtraso} dias. " : "")
+                @(semEvento ? "Processo está sem evento. " : "")
+                @(semMovimentacao ? $"Sem movimentação há {diasSemMovimentacao} dias. " : "")
+                @(faseExterna ? "Processo atrasado em fase externa." : "")
+            </p>
+
+            <div class="collapse" id="collapse-@safeProcessNumber">
+                <div class="process-details">
+                    <div class="detail-item">
+                        <i class="fas fa-map-marker-alt detail-icon"></i>
+                        <span class="detail-label">Último Evento:</span>
+                        <span class="detail-value">@Model.UltimoEvento?.Localizacao</span>
+                    </div>
+                    <div class="detail-item">
+                        <i class="fas fa-calendar detail-icon"></i>
+                        <span class="detail-label">Data da Criação:</span>
+                        <span class="detail-value">@Model.UltimoEvento?.DataCriacao.ToShortDateString()</span>
+                    </div>
+                    <div class="detail-item">
+                        <i class="fas fa-calendar detail-icon"></i>
+                        <span class="detail-label">Tipo Evento:</span>
+                        <span class="detail-value">@Model.UltimoEvento?.TipoEvento.Titulo</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
